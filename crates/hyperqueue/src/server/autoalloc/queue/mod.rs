@@ -1,4 +1,5 @@
 mod common;
+pub mod oar;
 pub mod pbs;
 pub mod slurm;
 
@@ -124,7 +125,7 @@ pub enum AllocationExternalStatus {
 
 pub type AllocationStatusMap = Map<AllocationId, AutoAllocResult<AllocationExternalStatus>>;
 
-/// Handler that can communicate with some allocation queue (e.g. PBS/Slurm queue)
+/// Handler that can communicate with some allocation queue (e.g. OAR/PBS/Slurm queue)
 pub trait QueueHandler {
     /// Submit an allocation that will start the corresponding number of workers.
     ///

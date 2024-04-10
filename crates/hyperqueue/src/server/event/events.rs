@@ -36,15 +36,15 @@ pub enum MonitoringEventPayload {
     AllocationQueueCreated(QueueId, Box<AllocationQueueParams>),
     /// Allocation queue has been removed
     AllocationQueueRemoved(QueueId),
-    /// Allocation was submitted into PBS/Slurm
+    /// Allocation was submitted into OAR/PBS/Slurm
     AllocationQueued {
         queue_id: QueueId,
         allocation_id: AllocationId,
         worker_count: u64,
     },
-    /// PBS/Slurm allocation started executing
+    /// OAR/PBS/Slurm allocation started executing
     AllocationStarted(QueueId, AllocationId),
-    /// PBS/Slurm allocation has finished executing
+    /// OAR/PBS/Slurm allocation has finished executing
     AllocationFinished(QueueId, AllocationId),
 }
 

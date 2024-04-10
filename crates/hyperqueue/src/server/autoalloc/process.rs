@@ -17,6 +17,7 @@ use crate::server::autoalloc::config::{
 use crate::server::autoalloc::estimator::{
     can_worker_execute_job, count_active_workers, get_server_task_state,
 };
+use crate::server::autoalloc::queue::oar::OarHandler;
 use crate::server::autoalloc::queue::pbs::PbsHandler;
 use crate::server::autoalloc::queue::slurm::SlurmHandler;
 use crate::server::autoalloc::queue::{AllocationExternalStatus, QueueHandler, SubmitMode};
@@ -209,6 +210,10 @@ pub fn create_allocation_handler(
     directory: PathBuf,
 ) -> anyhow::Result<Box<dyn QueueHandler>> {
     match manager {
+        ManagerType::Oar => {
+            let handler = OarHandler::new(directory, name);
+            handler.map::<Box<dyn QueueHandler>, _>(|handler| Box::new(handler))
+        }
         ManagerType::Pbs => {
             let handler = PbsHandler::new(directory, name);
             handler.map::<Box<dyn QueueHandler>, _>(|handler| Box::new(handler))

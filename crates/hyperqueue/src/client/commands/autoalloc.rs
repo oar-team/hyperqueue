@@ -60,6 +60,8 @@ struct RemoveQueueOpts {
 
 #[derive(Parser)]
 enum AddQueueCommand {
+    /// Create a OAR allocation queue
+    Oar(SharedQueueOpts),
     /// Create a PBS allocation queue
     Pbs(SharedQueueOpts),
     /// Create a SLURM allocation queue
@@ -81,7 +83,7 @@ struct SharedQueueOpts {
     #[arg(long, short, default_value_t = 1, value_parser = parse_backlog)]
     backlog: u32,
 
-    /// Time limit (walltime) of PBS/Slurm allocations
+    /// Time limit (walltime) of OAR/PBS/Slurm allocations
     #[arg(long, short('t'), value_parser = parse_hms_or_human_time)]
     time_limit: Duration,
 
@@ -144,6 +146,8 @@ struct DryRunOpts {
 
 #[derive(Parser)]
 enum DryRunCommand {
+    /// Try to create a OAR allocation
+    Oar(SharedQueueOpts),
     /// Try to create a PBS allocation
     Pbs(SharedQueueOpts),
     /// Try to create a SLURM allocation
@@ -316,6 +320,7 @@ wasted allocation duration."
 
 async fn dry_run_command(mut session: ClientSession, opts: DryRunOpts) -> anyhow::Result<()> {
     let (manager, parameters) = match opts.subcmd {
+        DryRunCommand::Oar(params) => (ManagerType::Oar, args_to_params(params)),
         DryRunCommand::Pbs(params) => (ManagerType::Pbs, args_to_params(params)),
         DryRunCommand::Slurm(params) => (ManagerType::Slurm, args_to_params(params)),
     };
@@ -338,6 +343,10 @@ wasting resources."
 
 async fn add_queue(mut session: ClientSession, opts: AddQueueOpts) -> anyhow::Result<()> {
     let (manager, parameters, dry_run) = match opts.subcmd {
+        AddQueueCommand::Oar(params) => {
+            let no_dry_run = params.no_dry_run;
+            (ManagerType::Oar, args_to_params(params), !no_dry_run)
+        }
         AddQueueCommand::Pbs(params) => {
             let no_dry_run = params.no_dry_run;
             (ManagerType::Pbs, args_to_params(params), !no_dry_run)

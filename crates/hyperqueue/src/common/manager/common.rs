@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-/// Format a duration as a PBS/Slurm time string, e.g. 01:05:02
+/// Format a duration as a OAR/PBS/Slurm time string, e.g. 01:05:02
 pub(super) fn format_duration(duration: &Duration) -> String {
     let mut seconds = duration.as_secs();
     let hours = seconds / 3600;

@@ -14,7 +14,7 @@ use tako::worker::{run_worker, WorkerConfiguration};
 use tako::WorkerId;
 
 use crate::common::manager::info::{ManagerInfo, ManagerType};
-use crate::common::manager::{pbs, slurm};
+use crate::common::manager::{oar, pbs, slurm};
 use crate::common::serverdir::ServerDir;
 use crate::worker::start::{HqTaskLauncher, WORKER_EXTRA_PROCESS_PID};
 use crate::worker::streamer::StreamerRef;
@@ -139,6 +139,32 @@ pub fn finalize_configuration(conf: &mut WorkerConfiguration) {
         WORKER_EXTRA_PROCESS_PID.to_string(),
         std::process::id().to_string(),
     );
+}
+
+pub fn try_get_oar_info() -> anyhow::Result<ManagerInfo> {
+    log::debug!("Detecting OAR environment");
+
+    std::env::var("OAR_NODEFILE")
+        .map_err(|_| anyhow!("OAR_NODEFILE not found. The process is not running under OAR"))?;
+
+    let manager_job_id =
+        std::env::var("OAR_JOBID").expect("OAR_JOBID not found in environment variables");
+
+    let time_limit = match oar::get_remaining_timelimit(&manager_job_id) {
+        Ok(time_limit) => Some(time_limit),
+        Err(error) => {
+            log::warn!("Cannot get time-limit from OAR: {error:?}");
+            None
+        }
+    };
+
+    log::info!("OAR environment detected");
+
+    Ok(ManagerInfo::new(
+        ManagerType::Oar,
+        manager_job_id,
+        time_limit,
+    ))
 }
 
 pub fn try_get_pbs_info() -> anyhow::Result<ManagerInfo> {

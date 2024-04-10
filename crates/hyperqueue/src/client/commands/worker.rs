@@ -26,7 +26,8 @@ use crate::transfer::messages::{
     WorkerInfo, WorkerInfoRequest,
 };
 use crate::worker::bootstrap::{
-    finalize_configuration, initialize_worker, try_get_pbs_info, try_get_slurm_info,
+    finalize_configuration, initialize_worker, try_get_oar_info, try_get_pbs_info,
+    try_get_slurm_info,
 };
 use crate::worker::hwdetect::{
     detect_additional_resources, detect_cpus, prune_hyper_threading, GPU_ENVIRONMENTS,
@@ -48,6 +49,7 @@ pub enum WorkerFilter {
 pub enum ManagerOpts {
     Detect,
     None,
+    Oar,
     Pbs,
     Slurm,
 }
@@ -305,12 +307,16 @@ fn gather_manager_info(opts: ManagerOpts) -> anyhow::Result<Option<ManagerInfo>>
     match opts {
         ManagerOpts::Detect => {
             log::debug!("Trying to detect manager");
-            Ok(try_get_pbs_info().or_else(|_| try_get_slurm_info()).ok())
+            Ok(try_get_oar_info()
+                .or_else(|_| try_get_pbs_info())
+                .or_else(|_| try_get_slurm_info())
+                .ok())
         }
         ManagerOpts::None => {
             log::debug!("Manager detection disabled");
             Ok(None)
         }
+        ManagerOpts::Oar => Ok(Some(try_get_oar_info()?)),
         ManagerOpts::Pbs => Ok(Some(try_get_pbs_info()?)),
         ManagerOpts::Slurm => Ok(Some(try_get_slurm_info()?)),
     }

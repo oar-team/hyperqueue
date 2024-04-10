@@ -412,6 +412,7 @@ impl Serialize for FormattedManagerType {
         S: Serializer,
     {
         match self.0 {
+            ManagerType::Oar => serializer.serialize_str("OAR"),
             ManagerType::Pbs => serializer.serialize_str("PBS"),
             ManagerType::Slurm => serializer.serialize_str("Slurm"),
         }

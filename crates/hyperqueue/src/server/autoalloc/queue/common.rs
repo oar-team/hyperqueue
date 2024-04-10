@@ -10,10 +10,10 @@ use tokio::process::Command;
 use crate::server::autoalloc::state::AllocationId;
 use crate::server::autoalloc::{AutoAllocResult, QueueId, QueueInfo};
 
-/// Name of a script that will be submitted to Slurm/PBS.
+/// Name of a script that will be submitted to Slurm/PBS/OAR.
 const SUBMIT_SCRIPT_NAME: &str = "hq-submit.sh";
 
-/// Name of a file that will store the job id of a submitted Slurm/PBS allocation.
+/// Name of a file that will store the job id of a submitted Slurm/PBS/OAR allocation.
 const JOBID_FILE_NAME: &str = "jobid";
 
 pub struct ExternalHandler {
@@ -63,7 +63,7 @@ pub fn create_allocation_dir(
     Ok(dir)
 }
 
-/// Submits a script into PBS/Slurm and creates debug information in the given allocation `directory`.
+/// Submits a script into OAR/PBS/Slurm and creates debug information in the given allocation `directory`.
 pub async fn submit_script<F>(
     script: String,
     program: &str,
@@ -136,6 +136,7 @@ pub fn build_worker_args(
 ) -> String {
     let manager = match manager {
         ManagerType::Pbs => "pbs",
+        ManagerType::Oar => "oar",
         ManagerType::Slurm => "slurm",
     };
 

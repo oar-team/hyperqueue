@@ -7,6 +7,7 @@ pub const WORKER_EXTRA_MANAGER_KEY: &str = "JobManager";
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub enum ManagerType {
+    Oar,
     Pbs,
     Slurm,
 }
@@ -14,6 +15,7 @@ pub enum ManagerType {
 impl Display for ManagerType {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
+            ManagerType::Oar => f.write_str("OAR"),
             ManagerType::Pbs => f.write_str("PBS"),
             ManagerType::Slurm => f.write_str("SLURM"),
         }

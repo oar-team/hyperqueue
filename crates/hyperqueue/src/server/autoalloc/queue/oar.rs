@@ -1,5 +1,5 @@
 use crate::common::utils::fs::get_current_dir;
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use std::fmt::Write;
 use std::future::Future;
 use std::path::PathBuf;
@@ -154,16 +154,11 @@ impl QueueHandler for OarHandler {
 }
 
 fn parse_oarsub_output(output: &str) -> AutoAllocResult<AllocationId> {
-    let mut iter = output
-        .split("\n")
-        .filter(|&l| l.to_string().starts_with("OAR_JOB_ID="));
-    let job_id = iter
-        .next()
-        .expect("oarsub failed")
-        .strip_prefix("OAR_JOB_ID=")
-        .expect("oarsub failed")
-        .to_string();
-    Ok(job_id)
+    output
+        .lines()
+        .find_map(|s| s.strip_prefix("OAR_JOB_ID="))
+        .map(|s| s.to_owned())
+        .ok_or(anyhow!(""))
 }
 
 fn parse_allocation_status(

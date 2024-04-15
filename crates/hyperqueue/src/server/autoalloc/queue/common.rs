@@ -2,6 +2,8 @@ use crate::common::manager::info::ManagerType;
 use anyhow::Context;
 use bstr::ByteSlice;
 use std::fmt::Write;
+use std::fs::Permissions;
+use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::Output;
 use std::time::Duration;
@@ -78,6 +80,11 @@ where
 
     std::fs::write(script_path, script)
         .with_context(|| anyhow::anyhow!("Cannot write script into {}", script_path))?;
+
+    if program == "oarsub" {
+        std::fs::set_permissions(script_path, Permissions::from_mode(0o755))
+            .with_context(|| anyhow::anyhow!("Cannot set script executable {}", script_path))?;
+    }
 
     let arguments = vec![program, script_path];
 

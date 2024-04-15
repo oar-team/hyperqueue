@@ -46,6 +46,11 @@ impl QueueHandler for OarHandler {
         let name = self.handler.name.clone();
         let allocation_num = self.handler.create_allocation_id();
 
+        log::debug!(
+            "OAR directory: {:?} {:?}",
+            &self.handler.server_directory,
+            &server_directory,
+        );
         Box::pin(async move {
             let directory = create_allocation_dir(
                 server_directory.clone(),
@@ -71,11 +76,14 @@ impl QueueHandler for OarHandler {
                 &worker_args,
                 mode,
             );
+            log::debug!("OAR directory: {:?} {:?}", &server_directory, &directory);
+
             let job_id = submit_script(script, "oarsub", &directory, |output| {
                 parse_oarsub_output(output)
             })
             .await;
 
+            log::debug!("OAR job_id: {:?}", &job_id);
             Ok(AllocationSubmissionResult {
                 id: job_id,
                 working_dir: directory,
@@ -110,7 +118,7 @@ impl QueueHandler for OarHandler {
             let output = command.output().await.context("oarstat start failed")?;
             let output = check_command_output(output).context("oarstat execution failed")?;
 
-            log::trace!(
+            log::debug!(
                 "OAR oarstat output\nStdout\n{}Stderr\n{}",
                 String::from_utf8_lossy(&output.stdout),
                 String::from_utf8_lossy(&output.stderr)

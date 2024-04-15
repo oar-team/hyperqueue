@@ -179,6 +179,7 @@ pub async fn try_submit_allocation(
     params: AllocationQueueParams,
 ) -> anyhow::Result<()> {
     let tmpdir = TempDir::new("hq")?;
+    log::debug!("TempDir: {:?}", tmpdir);
     let mut handler =
         create_allocation_handler(&manager, params.name.clone(), tmpdir.as_ref().to_path_buf())?;
     let worker_count = params.workers_per_alloc;
@@ -209,6 +210,7 @@ pub fn create_allocation_handler(
     name: Option<String>,
     directory: PathBuf,
 ) -> anyhow::Result<Box<dyn QueueHandler>> {
+    log::debug!("Directory: {:?}", &directory);
     match manager {
         ManagerType::Oar => {
             let handler = OarHandler::new(directory, name);
@@ -268,6 +270,7 @@ fn create_queue(
     params: AllocationQueueParams,
 ) -> anyhow::Result<QueueId> {
     let name = params.name.clone();
+    log::debug!("Directory: {:?}", &server_directory);
     let handler = create_allocation_handler(&manager, name.clone(), server_directory);
     let queue_info = create_queue_info(params.clone());
 
